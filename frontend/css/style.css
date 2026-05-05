@@ -1,101 +1,86 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "微软雅黑";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Microsoft YaHei", sans-serif;
 }
-body{
-    background: #f5f7fa;
-    font-size: 14px;
-    color: #333;
+
+body {
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
-/*导航栏*/
-.nav{
-    width: 100%;
-    height: 50px;
-    background: #2563eb;
-    line-height: 50px;
-    padding: 0 30px;
+
+/* 导航栏 */
+.nav {
+  background-color: #409eff;
+  padding: 15px 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-.nav a{
-    color: #fff;
-    text-decoration: none;
-    margin-right: 25px;
-    font-size: 15px;
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  margin-right: 20px;
+  font-size: 16px;
 }
-.nav a:hover{
-    color: #bfdbfe;
+
+.nav a:hover {
+  color: #ffd04b;
 }
-/*容器*/
-.container{
-    width: 1000px;
-    margin: 30px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 8px #eee;
+
+/* 中间内容容器 */
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  background: white;
+  padding: 45px 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  min-height: 420px;
 }
-/*表单样式*/
-.title{
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 25px;
-    color: #2563eb;
+
+/* 标题 */
+.title {
+  text-align: center;
+  font-size: 26px;
+  color: #333;
+  margin-bottom: 30px;
 }
-.form-item{
-    margin: 15px 0;
+
+/* 段落 */
+.container p {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #555;
+  margin: 12px 0;
+  text-align: center;
 }
-.form-item label{
-    display: inline-block;
-    width: 100px;
+
+/* 按钮 */
+.btn {
+  display: block;
+  width: 160px;
+  height: 45px;
+  line-height: 45px;
+  background-color: #409eff;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  margin: 40px auto 0;
+  font-size: 16px;
+  transition: 0.2s;
 }
-input,select,textarea{
-    width: 280px;
-    height: 36px;
-    border: 1px solid #ccc;
-    padding: 0 10px;
-    border-radius: 4px;
+
+.btn:hover {
+  background-color: #2b8dff;
 }
-textarea{
-    height: 80px;
-    padding-top:8px;
-}
-.btn{
-    width: 280px;
-    height: 40px;
-    background: #2563eb;
-    color: #fff;
-    border: none;
-    border-radius:4px;
-    cursor: pointer;
-}
-.btn:hover{
-    background:#1d4ed8;
-}
-/*订单卡片*/
-.order-item{
-    padding:15px;
-    border:1px solid #eee;
-    border-radius:6px;
-    margin:12px 0;
-}
-/*底部导航 移动端适配页面底部菜单*/
-.foot-nav{
-    position: fixed;
-    bottom:0;
-    width:100%;
-    height:50px;
-    background:#fff;
-    display:flex;
-    border-top:1px solid #eee;
-}
-.foot-nav a{
-    flex:1;
-    text-align:center;
-    line-height:50px;
-    color:#666;
-    text-decoration:none;
-}
-.foot-nav a.active{
-    color:#2563eb;
+
+/* 页脚 */
+.footer {
+  text-align: center;
+  padding: 25px;
+  color: #888;
+  font-size: 14px;
+  margin-top: 20px;
 }
