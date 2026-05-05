@@ -2,8 +2,47 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>发布跑腿订单</title>
+    <title>校园快递跑腿系统-发布订单</title>
     <link rel="stylesheet" href="./style.css">
+    <style>
+        .step-card { display: none; }
+        .step-card.active { display: block; }
+        .type-btn {
+            width: 200px;
+            height: 45px;
+            line-height: 45px;
+            background-color: #409eff;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            margin: 15px auto;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        .type-btn:hover { background-color: #2b8dff; }
+        .back-btn { background-color: #909399; }
+        .back-btn:hover { background-color: #73767a; }
+        .form-item select,
+        .form-item textarea {
+            width: 220px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* 🔥 终极修复：强制所有标签宽度 + 不换行 */
+        .form-item label {
+            width: 90px !important;
+            min-width: 90px !important;
+            max-width: 90px !important;
+            white-space: nowrap !important;
+            display: inline-block !important;
+            text-align: right !important;
+            margin-right: 10px !important;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
@@ -12,35 +51,106 @@
         <a href="publish.html">发布订单</a>
         <a href="mine.html">个人中心</a>
     </div>
-    <div class="container" style="width:500px;">
-        <h2 class="title">发布快递跑腿订单</h2>
-        <div class="form-item">
-            <label>取件地址：</label>
-            <input type="text" placeholder="如：东门快递站">
-        </div>
-        <div class="form-item">
-            <label>送达地址：</label>
-            <input type="text" placeholder="如：12栋宿舍楼">
-        </div>
-        <div class="form-item">
-            <label>快递类型：</label>
-            <select>
-                <option>快递代取</option>
-                <option>快递代寄</option>
-                <option>校园跑腿</option>
-            </select>
-        </div>
-        <div class="form-item">
-            <label>悬赏金额：</label>
-            <input type="text" placeholder="输入金额">
-        </div>
-        <div class="form-item">
-            <label>备注说明：</label>
-            <textarea placeholder="输入物品信息、要求"></textarea>
-        </div>
-        <div class="form-item" style="margin-left:102px;">
-            <button class="btn">提交发布</button>
-        </div>
+
+    <!-- 选择业务类型 -->
+    <div class="login-card step-card active" id="step1">
+        <h2>请选择业务类型</h2>
+        <button class="type-btn" onclick="go('step2')">快递代取</button>
+        <button class="type-btn" onclick="go('step3')">快递代寄</button>
+        <button class="type-btn" onclick="go('step4')">校园跑腿</button>
     </div>
+
+    <!-- 快递代取 -->
+    <div class="login-card step-card" id="step2">
+        <h2>快递代取</h2>
+        <form class="login-form">
+            <div class="form-item">
+                <label>取件地址：</label>
+                <input type="text" placeholder="快递站位置">
+            </div>
+            <div class="form-item">
+                <label>送达地址：</label>
+                <input type="text" placeholder="宿舍/教学楼">
+            </div>
+            <div class="form-item">
+                <label>赏金：</label>
+                <input type="text" placeholder="例如：5元">
+            </div>
+            <div class="form-item">
+                <label>备注：</label>
+                <textarea rows="3" placeholder="快递信息、取件码等"></textarea>
+            </div>
+            <button type="submit" class="login-btn">发布订单</button>
+        </form>
+        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
+    </div>
+
+    <!-- 快递代寄 -->
+    <div class="login-card step-card" id="step3">
+        <h2>快递代寄</h2>
+        <form class="login-form">
+            <div class="form-item">
+                <label>寄件地址：</label>
+                <input type="text" placeholder="你的位置">
+            </div>
+            <div class="form-item">
+                <label>快递公司：</label>
+                <select>
+                    <option>中通</option>
+                    <option>圆通</option>
+                    <option>顺丰</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>赏金：</label>
+                <input type="text" placeholder="例如：6元">
+            </div>
+            <div class="form-item">
+                <label>备注：</label>
+                <textarea rows="3" placeholder="物品信息"></textarea>
+            </div>
+            <button type="submit" class="login-btn">发布订单</button>
+        </form>
+        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
+    </div>
+
+    <!-- 校园跑腿 -->
+    <div class="login-card step-card" id="step4">
+        <h2>校园跑腿</h2>
+        <form class="login-form">
+            <div class="form-item">
+                <label>起点位置：</label>
+                <input type="text" placeholder="食堂/超市/店铺">
+            </div>
+            <div class="form-item">
+                <label>终点位置：</label>
+                <input type="text" placeholder="宿舍/教学楼">
+            </div>
+            <div class="form-item">
+                <label>跑腿需求：</label>
+                <select>
+                    <option>买饭</option>
+                    <option>代买</option>
+                    <option>送东西</option>
+                    <option>其他</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>赏金：</label>
+                <input type="text" placeholder="例如：4元">
+            </div>
+            <button type="submit" class="login-btn">发布订单</button>
+        </form>
+        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
+    </div>
+
+    <div class="footer">© 2026 校园快递跑腿管理系统</div>
+
+    <script>
+        function go(id) {
+            document.querySelectorAll('.step-card').forEach(s=>s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
 </body>
 </html>
