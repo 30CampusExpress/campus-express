@@ -6,6 +6,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.example.errand3.mapper.OrderInfoMapper;
+import com.example.errand3.entity.OrderInfo;
 
 @Configuration
 public class MyBatisConfig {
@@ -22,5 +24,11 @@ public class MyBatisConfig {
         MapperFactoryBean<UserMapper> factory = new MapperFactoryBean<>(UserMapper.class);
         factory.setSqlSessionFactory(sqlSessionFactory);
         return factory;
+    }
+    @Bean
+    public MapperFactoryBean<OrderInfoMapper> orderInfoMapper(SqlSessionFactory sqlSessionFactory) {
+        MapperFactoryBean<OrderInfoMapper> factoryBean = new MapperFactoryBean<>(OrderInfoMapper.class);
+        factoryBean.setSqlSessionFactory(sqlSessionFactory);
+        return factoryBean;
     }
 }
