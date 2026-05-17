@@ -83,7 +83,6 @@ public class UserController {
     @PostMapping("/register")
     public Result<?> register(@RequestBody User user) {
         // 强制设置角色为普通用户
-        user.setRole("USER");
         // 调用新增方法保存到数据库
         userService.save(user);
         return Result.success();
