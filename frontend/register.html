@@ -4,38 +4,205 @@
     <meta charset="UTF-8">
     <title>校园快递跑腿系统-注册</title>
     <link rel="stylesheet" href="./style.css">
+    <style>
+        /* 加载转圈动画 */
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-right: 6px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* 禁用按钮变灰 */
+        .login-btn:disabled {
+            background-color: #b3c4d8 !important;
+            cursor: not-allowed;
+        }
+        .user-info {
+            color: white;
+            margin-left: 20px;
+            display: none;
+        }
+        .user-info button {
+            margin-left: 8px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        /* 重复提示样式 */
+        .tip-text{
+            color:red;
+            font-size:12px;
+            margin-top:5px;
+            display:none;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
         <a href="index.html">首页</a>
-        <a href="login.html">登录</a>
+        <a href="login.html" id="navLogin">登录</a>
         <a href="register.html">注册</a>
+
+        <span id="userInfo" class="user-info">
+            欢迎，<span id="uname"></span>
+            <button onclick="logout()">退出</button>
+        </span>
     </div>
 
     <div class="login-card">
         <h2>用户注册</h2>
-        <form class="login-form">
+        
+        <form class="login-form" id="registerForm" autocomplete="off">
             <div class="form-item">
                 <label>学号：</label>
-                <input type="text" placeholder="请输入学号">
+                <input type="text" id="studentId" placeholder="请输入学号" autocomplete="off">
+                <div class="tip-text" id="nameTip">该学号已被注册！</div>
             </div>
             <div class="form-item">
                 <label>姓名：</label>
-                <input type="text" placeholder="请输入姓名">
+                <input type="text" id="realName" placeholder="请输入姓名" autocomplete="off">
             </div>
             <div class="form-item">
                 <label style="width:70px; white-space: nowrap;">手机号：</label>
-                <input type="text" placeholder="请输入手机号">
+                <input type="text" id="phone" placeholder="请输入手机号" autocomplete="off">
             </div>
             <div class="form-item">
                 <label>密码：</label>
-                <input type="password" placeholder="请输入密码">
+                <input type="password" id="password" placeholder="请输入密码" autocomplete="new-password">
             </div>
-            <button type="submit" class="login-btn">注册</button>
+
+            <button type="submit" class="login-btn" id="regBtn">
+                <span class="loading-spinner"></span>
+                <span class="btn-text">注册</span>
+            </button>
         </form>
+
         <p class="register-tip">已有账号？<a href="login.html">去登录</a></p>
     </div>
 
     <div class="footer">© 2026 校园快递跑腿管理系统</div>
+
+<script>
+    const baseUrl = "http://172.25.168.86:9090";
+    const regBtn = document.getElementById("regBtn");
+    const spinner = document.querySelector(".loading-spinner");
+    const btnText = document.querySelector(".btn-text");
+
+    // 失去焦点校验学号是否已注册
+    document.getElementById("studentId").addEventListener("blur", function(){
+        let username = this.value.trim();
+        if(!username) return;
+        
+        fetch(baseUrl + "/api/user/check?username=" + username)
+        .then(res=>res.json())
+        .then(res=>{
+            if(res.data === true){
+                document.getElementById("nameTip").style.display = "block";
+            }else{
+                document.getElementById("nameTip").style.display = "none";
+            }
+        })
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        let studentId = document.getElementById("studentId").value.trim();
+        let realName = document.getElementById("realName").value.trim();
+        let phone = document.getElementById("phone").value.trim();
+        let password = document.getElementById("password").value.trim();
+
+        // 先判断学号重复
+        if(document.getElementById("nameTip").style.display === "block"){
+            alert("注册失败：当前学号已经存在，请勿重复注册");
+            return;
+        }
+        // 非空校验
+        if (!studentId) {
+            alert("注册失败：请填写学号");
+            return;
+        }
+        if (!realName) {
+            alert("注册失败：请填写真实姓名");
+            return;
+        }
+        if (!phone) {
+            alert("注册失败：请填写手机号码");
+            return;
+        }
+        if (!password) {
+            alert("注册失败：请设置登录密码");
+            return;
+        }
+        if(password.length < 6){
+            alert("注册失败：密码长度不能少于6位");
+            return;
+        }
+
+        regBtn.disabled = true;
+        spinner.style.display = "inline-block";
+        btnText.innerText = "注册中...";
+
+        fetch(baseUrl + "/api/user/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: studentId,
+                nickname: realName,
+                phone: phone,
+                password: password
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.code === 200) {
+                alert("注册成功！请前往登录页面登录账号");
+                location.href = "login.html";
+            } else {
+                // 后端返回自定义失败原因优先展示
+                let errMsg = res.msg || res.message || "未知原因导致注册失败，请稍后重试";
+                alert("注册失败：" + errMsg);
+            }
+        })
+        .catch(() => {
+            alert("注册失败：无法连接后端服务器，请检查网络或服务是否启动");
+        })
+        .finally(() => {
+            regBtn.disabled = false;
+            spinner.style.display = "none";
+            btnText.innerText = "注册";
+        });
+    });
+
+    window.onload = function () {
+        let navLogin = document.getElementById("navLogin");
+        let userInfo = document.getElementById("userInfo");
+        let uname = document.getElementById("uname");
+
+        let isLogin = localStorage.getItem("isLogin");
+        let username = localStorage.getItem("username");
+
+        if (isLogin == "true") {
+            navLogin.style.display = "none";
+            userInfo.style.display = "inline-block";
+            uname.innerText = username;
+        } else {
+            navLogin.style.display = "inline-block";
+            userInfo.style.display = "none";
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        alert("退出成功");
+        location.href = "login.html";
+    }
+</script>
 </body>
 </html>
