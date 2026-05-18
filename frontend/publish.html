@@ -2,155 +2,216 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>校园快递跑腿系统-发布订单</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>发布跑腿订单</title>
     <style>
-        .step-card { display: none; }
-        .step-card.active { display: block; }
-        .type-btn {
-            width: 200px;
-            height: 45px;
-            line-height: 45px;
-            background-color: #409eff;
-            color: white;
-            text-align: center;
-            border-radius: 6px;
-            margin: 15px auto;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-        }
-        .type-btn:hover { background-color: #2b8dff; }
-        .back-btn { background-color: #909399; }
-        .back-btn:hover { background-color: #73767a; }
-        .form-item select,
-        .form-item textarea {
-            width: 220px;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"微软雅黑";background:#f5f7fa}
+        .nav{background:#409eff;padding:15px 30px}
+        .nav a{color:#fff;text-decoration:none;margin-right:20px}
+        .publish-box{width:500px;margin:50px auto;background:#fff;padding:30px;border-radius:8px;box-shadow:0 0 10px #eee}
+        .publish-box h2{text-align:center;margin-bottom:20px}
+        .form-item{margin-bottom:15px}
+        .form-item label{display:block;margin-bottom:5px}
+
+        .form-item input,
+        .form-item textarea{
+            width:100%;
+            height:42px;
+            padding:10px;
+            border:1px solid #ddd;
+            border-radius:4px;
+            font-size:14px;
+            font-family:"微软雅黑";
         }
 
-        /* 🔥 终极修复：强制所有标签宽度 + 不换行 */
-        .form-item label {
-            width: 90px !important;
-            min-width: 90px !important;
-            max-width: 90px !important;
-            white-space: nowrap !important;
-            display: inline-block !important;
-            text-align: right !important;
-            margin-right: 10px !important;
+        input::placeholder,
+        textarea::placeholder{
+            font-size:14px;
+            color:#999;
+            font-family:"微软雅黑";
+        }
+
+        .publish-btn{
+            width:100%;
+            padding:12px;
+            background:#409eff;
+            color:#fff;
+            border:none;
+            border-radius:4px;
+            font-size:16px;
+            cursor:pointer
+        }
+        .publish-btn:disabled{
+            background:#a0cfff;
+            cursor:not-allowed
+        }
+
+        .user-info{
+            color:white;
+            margin-left:10px;
+            display:none;
+        }
+        .user-info button{
+            margin-left:8px;
+            padding:2px 6px;
+            cursor:pointer;
         }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <a href="index.html">首页</a>
-        <a href="order.html">订单列表</a>
-        <a href="publish.html">发布订单</a>
-        <a href="mine.html">个人中心</a>
-    </div>
 
-    <!-- 选择业务类型 -->
-    <div class="login-card step-card active" id="step1">
-        <h2>请选择业务类型</h2>
-        <button class="type-btn" onclick="go('step2')">快递代取</button>
-        <button class="type-btn" onclick="go('step3')">快递代寄</button>
-        <button class="type-btn" onclick="go('step4')">校园跑腿</button>
-    </div>
+<div class="nav">
+    <a href="index.html">首页</a>
+    <a href="publish.html">发布跑腿</a>
+    <a href="login.html" id="loginBtn">登录</a>
+    <span class="user-info" id="userInfo">
+        欢迎，<span id="uname"></span>
+        <button onclick="logout()">退出</button>
+    </span>
+</div>
 
-    <!-- 快递代取 -->
-    <div class="login-card step-card" id="step2">
-        <h2>快递代取</h2>
-        <form class="login-form">
-            <div class="form-item">
-                <label>取件地址：</label>
-                <input type="text" placeholder="快递站位置">
-            </div>
-            <div class="form-item">
-                <label>送达地址：</label>
-                <input type="text" placeholder="宿舍/教学楼">
-            </div>
-            <div class="form-item">
-                <label>赏金：</label>
-                <input type="text" placeholder="例如：5元">
-            </div>
-            <div class="form-item">
-                <label>备注：</label>
-                <textarea rows="3" placeholder="快递信息、取件码等"></textarea>
-            </div>
-            <button type="submit" class="login-btn">发布订单</button>
-        </form>
-        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
-    </div>
+<div class="publish-box">
+    <h2>发布跑腿订单</h2>
+    <form id="publishForm">
 
-    <!-- 快递代寄 -->
-    <div class="login-card step-card" id="step3">
-        <h2>快递代寄</h2>
-        <form class="login-form">
-            <div class="form-item">
-                <label>寄件地址：</label>
-                <input type="text" placeholder="你的位置">
-            </div>
-            <div class="form-item">
-                <label>快递公司：</label>
-                <select>
-                    <option>中通</option>
-                    <option>圆通</option>
-                    <option>顺丰</option>
-                </select>
-            </div>
-            <div class="form-item">
-                <label>赏金：</label>
-                <input type="text" placeholder="例如：6元">
-            </div>
-            <div class="form-item">
-                <label>备注：</label>
-                <textarea rows="3" placeholder="物品信息"></textarea>
-            </div>
-            <button type="submit" class="login-btn">发布订单</button>
-        </form>
-        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
-    </div>
+        <div class="form-item">
+            <label>取货地址</label>
+            <input type="text" id="pickupAddress" placeholder="请输入取货地址（如：一号宿舍楼）">
+        </div>
 
-    <!-- 校园跑腿 -->
-    <div class="login-card step-card" id="step4">
-        <h2>校园跑腿</h2>
-        <form class="login-form">
-            <div class="form-item">
-                <label>起点位置：</label>
-                <input type="text" placeholder="食堂/超市/店铺">
-            </div>
-            <div class="form-item">
-                <label>终点位置：</label>
-                <input type="text" placeholder="宿舍/教学楼">
-            </div>
-            <div class="form-item">
-                <label>跑腿需求：</label>
-                <select>
-                    <option>买饭</option>
-                    <option>代买</option>
-                    <option>送东西</option>
-                    <option>其他</option>
-                </select>
-            </div>
-            <div class="form-item">
-                <label>赏金：</label>
-                <input type="text" placeholder="例如：4元">
-            </div>
-            <button type="submit" class="login-btn">发布订单</button>
-        </form>
-        <button class="type-btn back-btn" onclick="go('step1')">返回</button>
-    </div>
+        <div class="form-item">
+            <label>送货地址</label>
+            <input type="text" id="deliveryAddress" placeholder="请输入送货地址（如：学校大门口）">
+        </div>
 
-    <div class="footer">© 2026 校园快递跑腿管理系统</div>
+        <div class="form-item">
+            <label>物品名称</label>
+            <input type="text" id="goodsName" placeholder="例如：快递、外卖、文件">
+        </div>
 
-    <script>
-        function go(id) {
-            document.querySelectorAll('.step-card').forEach(s=>s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        <div class="form-item">
+            <label>物品描述</label>
+            <textarea id="description" placeholder="详细说明取件/送件要求"></textarea>
+        </div>
+
+        <div class="form-item">
+            <label>物品类型</label>
+            <input type="text" id="goodsType" placeholder="例如：文件、快递、餐饮">
+        </div>
+
+        <div class="form-item">
+            <label>小费(元)</label>
+            <input type="text" id="tip" placeholder="请输入数字（如 5.0）">
+        </div>
+
+        <button type="submit" class="publish-btn" id="publishBtn">发布订单</button>
+    </form>
+</div>
+
+<script>
+const baseUrl = "http://172.25.168.86:9090";
+
+window.onload = function(){
+    let userInfo = localStorage.getItem("userInfo");
+    if(!userInfo){
+        alert("请先登录！");
+        window.location.href = "login.html";
+        return;
+    }
+
+    let loginBtn = document.getElementById("loginBtn");
+    let userInfoBar = document.getElementById("userInfo");
+    let uname = document.getElementById("uname");
+    let isLogin = localStorage.getItem("isLogin");
+    let username = localStorage.getItem("username");
+
+    if(isLogin === "true"){
+        loginBtn.style.display = "none";
+        userInfoBar.style.display = "inline-block";
+        uname.innerText = username;
+    }else{
+        loginBtn.style.display = "inline-block";
+        userInfoBar.style.display = "none";
+    }
+}
+
+function validNumber(fieldId, fieldName){
+    let input = document.getElementById(fieldId);
+    input.addEventListener("blur",function(){
+        let val = this.value.trim();
+        if(val === "") return;
+        let reg = /^(0|[1-9]\d*)(\.\d+)?$/;
+        if(!reg.test(val)){
+            alert(fieldName + "必须是正数，支持小数！");
+            this.value = "";
+            this.focus();
         }
-    </script>
+    });
+}
+
+validNumber("tip", "小费");
+
+document.getElementById("publishForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    let senderId = userInfo.id;
+
+    let pickupAddress = document.getElementById("pickupAddress").value.trim();
+    let deliveryAddress = document.getElementById("deliveryAddress").value.trim();
+    
+    let goodsName = document.getElementById("goodsName").value.trim();
+    let description = document.getElementById("description").value.trim();
+    let goodsType = document.getElementById("goodsType").value.trim();
+    let tip = document.getElementById("tip").value.trim();
+
+    if(!pickupAddress || !deliveryAddress || !goodsName || !description || !goodsType || !tip){
+        alert("请填写完整订单信息！所有字段不能为空");
+        return;
+    }
+
+    let btn = document.getElementById("publishBtn");
+    btn.disabled = true;
+    btn.innerText = "发布中...";
+
+    fetch(baseUrl + "/api/order", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+            // ✅ 已修复：正确字段名 pickupAddress
+            pickupAddress: pickupAddress,
+            deliveryAddress: deliveryAddress,
+            goodsName:goodsName,
+            description:description,
+            goodsType:goodsType,
+            tip:parseFloat(tip),
+            senderId:senderId,
+            status:"待接单"
+        })
+    })
+    .then(res=>res.json())
+    .then(res=>{
+        if(res.code===200){
+            alert("发布成功！");
+            window.location.href = "index.html";
+        }else{
+            alert("发布失败："+(res.message||"未知错误"));
+        }
+    })
+    .catch(err=>{
+        alert("连接后端失败：" + err);
+    })
+    .finally(()=>{
+        btn.disabled = false;
+        btn.innerText = "发布订单";
+    });
+});
+
+function logout(){
+    localStorage.clear();
+    alert("退出成功");
+    location.href = "login.html";
+}
+</script>
 </body>
 </html>
