@@ -3,35 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <title>校园快递跑腿系统-登录</title>
-    <link rel="stylesheet" href="./style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "微软雅黑", sans-serif;
+            background-color: #f5f7fa;
+        }
+        .nav {
+            background-color: #409eff;
+            padding: 15px 30px;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 30px;
+        }
+        .login-box {
+            width: 350px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #409eff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .login-btn:disabled {
+            background-color: #a0cfff;
+            cursor: not-allowed;
+        }
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .register-link a {
+            color: #409eff;
+            text-decoration: none;
+        }
+        .user-info {
+            color: white;
+            display: none;
+        }
+        .user-info button {
+            margin-left: 10px;
+            padding: 3px 8px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <!-- 导航栏 -->
     <div class="nav">
         <a href="index.html">首页</a>
-        <a href="login.html">登录</a>
+        <a href="login.html" id="navLoginLink">登录</a>
         <a href="register.html">注册</a>
-        <a href="order.html">全部订单</a>
+        <a href="publish.html" id="navPublishLink" style="display: none;">发布跑腿</a>
+        <a href="mine.html" id="navMineLink" style="display: none;">个人中心</a>
+        <span class="user-info" id="userInfo">
+            欢迎，<span id="uname"></span>
+            <button onclick="logout()">退出</button>
+        </span>
     </div>
 
-    <!-- 登录卡片 -->
-    <div class="login-card">
+    <div class="login-box">
         <h2>用户登录</h2>
-        <form class="login-form">
-            <div class="form-item">
-                <label>账号：</label>
-                <input type="text" placeholder="请输入学号/账号">
+        <form id="loginForm" autocomplete="off">
+            <div class="form-group">
+                <label>账号:</label>
+                <input type="text" id="username" placeholder="请输入账号" autocomplete="off">
             </div>
-            <div class="form-item">
-                <label>密码：</label>
-                <input type="password" placeholder="请输入密码">
+            <div class="form-group">
+                <label>密码:</label>
+                <input type="password" id="password" placeholder="请输入密码" autocomplete="new-password">
             </div>
-            <button type="submit" class="login-btn">登录</button>
+            <button type="submit" class="login-btn" id="formLoginBtn">
+                <span class="loading-spinner"></span>
+                <span class="btn-text">登录</span>
+            </button>
         </form>
-        <p class="register-tip">没有账号？<a href="register.html">去注册</a></p>
+        <div class="register-link">
+            没有账号? <a href="register.html">去注册</a>
+        </div>
     </div>
 
-    <!-- 页脚 -->
-    <div class="footer">© 2026 校园快递跑腿管理系统</div>
+<script>
+const baseUrl = "http://172.25.168.86:9090";
+const loginBtn = document.getElementById("formLoginBtn");
+const spinner = document.querySelector(".loading-spinner");
+const btnText = document.querySelector(".btn-text");
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+        alert("请输入账号和密码");
+        return;
+    }
+
+    loginBtn.disabled = true;
+    spinner.style.display = "inline-block";
+    btnText.textContent = "登录中...";
+
+    try {
+        // 1. 先尝试管理员登录
+        const adminRes = await fetch(baseUrl + "/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+        const adminData = await adminRes.json();
+
+        // ====================== ✅ 修复这里 ======================
+        if (adminData.code === 200 && adminData.data) {
+            localStorage.setItem("adminInfo", JSON.stringify(adminData.data));
+            localStorage.setItem("isLogin", "true");
+            localStorage.setItem("username", adminData.data.username);
+            alert("管理员登录成功！");
+            window.location.replace("admin.html");
+            return;
+        }
+
+        // 2. 管理员登录失败 → 普通用户登录
+        const userRes = await fetch(baseUrl + "/api/user/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+        const userData = await userRes.json();
+
+        if (userData.code === 200 && userData.data) {
+            localStorage.setItem("userInfo", JSON.stringify(userData.data));
+            localStorage.setItem("isLogin", "true");
+            localStorage.setItem("username", userData.data.username);
+            alert("登录成功！");
+            window.location.replace("index.html");
+        } else {
+            alert("账号或密码错误");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("连接后端失败，请检查后端是否启动");
+    } finally {
+        loginBtn.disabled = false;
+        spinner.style.display = "none";
+        btnText.textContent = "登录";
+    }
+});
+
+window.onload = function () {
+    const isLogin = localStorage.getItem("isLogin");
+    const username = localStorage.getItem("username");
+    const navLogin = document.getElementById("navLoginLink");
+    const navPublish = document.getElementById("navPublishLink");
+    const navMine = document.getElementById("navMineLink");
+    const userInfo = document.getElementById("userInfo");
+    const uname = document.getElementById("uname");
+
+    if (isLogin === "true" && username) {
+        navLogin.style.display = "none";
+        navPublish.style.display = "inline-block";
+        navMine.style.display = "inline-block";
+        userInfo.style.display = "inline-block";
+        uname.innerText = username;
+    } else {
+        navLogin.style.display = "inline-block";
+        navPublish.style.display = "none";
+        navMine.style.display = "none";
+        userInfo.style.display = "none";
+    }
+};
+
+function logout() {
+    if (confirm("确定退出？")) {
+        localStorage.clear();
+        alert("退出成功");
+        window.location.replace("index.html");
+    }
+}
+</script>
 </body>
 </html>
