@@ -4,17 +4,151 @@
     <meta charset="UTF-8">
     <title>校园快递跑腿系统-首页</title>
     <link rel="stylesheet" href="./style.css">
+    <style>
+        .user-info {
+            color: white;
+            margin-left: 20px;
+            display: none;
+        }
+        .user-info button {
+            margin-left: 8px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        .carousel {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            height: 280px;
+            margin: 30px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .carousel-images {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease;
+        }
+        .carousel-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .prev { left: 15px; }
+        .next { right: 15px; }
+        .carousel-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .dot.active {
+            background: white;
+        }
+        .order-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .order-container h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-left: 4px solid #409eff;
+            padding-left: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            border: 1px solid #eee;
+            padding: 10px;
+            text-align: center;
+        }
+        table th {
+            background: #f5f7fa;
+        }
+        .btn-order {
+            padding: 4px 10px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right:4px;
+        }
+        .btn-cancel {
+            padding: 4px 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
         <a href="index.html">首页</a>
-        <a href="login.html">登录</a>
-        <a href="order.html">全部订单</a>
-        <a href="publish.html">发布跑腿</a>
-        <a href="mine.html">个人中心</a>
+        <a href="login.html" id="loginLink">登录</a>
+        <a href="publish.html" id="publishLink">发布跑腿</a>
+        <a href="javascript:showMyOrder()" id="myOrderLink" style="display:none;">我的订单</a>
+        <a href="apply-rider.html" id="riderApplyLink" style="display:none;">骑手认证</a>
+
+        <span class="user-info" id="userInfo">
+            欢迎，<span id="uname"></span>
+            <button onclick="logout()">退出</button>
+        </span>
     </div>
 
-    <div class="container">
+    <div class="carousel">
+        <div class="carousel-images">
+            <img src="images/banner1.png">
+            <img src="images/banner2.png">
+            <img src="images/banner3.png">
+            <img src="images/banner4.png">
+        </div>
+        <button class="carousel-btn prev">‹</button>
+        <button class="carousel-btn next">›</button>
+        <div class="carousel-dots">
+            <div class="dot active" data-index="0"></div>
+            <div class="dot" data-index="1"></div>
+            <div class="dot" data-index="2"></div>
+            <div class="dot" data-index="3"></div>
+        </div>
+    </div>
+
+    <div class="container" id="welcomeBox">
         <h2 class="title">欢迎进入校园快递跑腿管理系统</h2>
         <div>
             <p>1. 校园快递代取、代寄、跑腿代办</p>
@@ -24,6 +158,176 @@
             <a href="login.html" class="btn">立即进入</a>
         </div>
     </div>
+
+    <div class="order-container" id="myOrderBox">
+        <h2>我的跑腿订单</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>订单ID</th>
+                    <th>物品名称</th>
+                    <th>小费</th>
+                    <th>取货地址</th>
+                    <th>送货地址</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+            <tbody id="myOrderList"></tbody>
+        </table>
+    </div>
+
     <div class="footer">© 2026 校园快递跑腿管理系统</div>
+
+<script>
+const baseUrl = "http://172.25.168.86:9090";
+
+const images = document.querySelector('.carousel-images');
+const imgs = document.querySelectorAll('.carousel-images img');
+const dots = document.querySelectorAll('.dot');
+const prevBtn = document.querySelector('.prev');
+const nextBtn = document.querySelector('.next');
+
+let current = 0;
+const total = imgs.length;
+
+function updateCarousel() {
+    images.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+}
+function nextSlide() { current = (current + 1) % total; updateCarousel(); }
+function prevSlide() { current = (current - 1 + total) % total; updateCarousel(); }
+nextBtn.addEventListener('click', nextSlide);
+prevBtn.addEventListener('click', prevSlide);
+dots.forEach(d => {
+    d.addEventListener('click', () => { current = Number(d.dataset.index); updateCarousel(); });
+});
+setInterval(nextSlide, 2000);
+
+window.onload = async function() {
+    let isLogin = localStorage.getItem("isLogin");
+    let username = localStorage.getItem("username");
+    let userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
+    let loginLink = document.getElementById("loginLink");
+    let publishLink = document.getElementById("publishLink");
+    let myOrderLink = document.getElementById("myOrderLink");
+    let riderApplyLink = document.getElementById("riderApplyLink");
+    let userInfoSpan = document.getElementById("userInfo");
+    let uname = document.getElementById("uname");
+
+    if (isLogin === "true") {
+        loginLink.style.display = "none";
+        publishLink.style.display = "inline-block";
+        myOrderLink.style.display = "inline-block";
+        riderApplyLink.style.display = "inline-block";
+        userInfoSpan.style.display = "inline-block";
+        uname.innerText = username;
+        await checkRiderStatus(userInfo.id);
+    } else {
+        loginLink.style.display = "inline-block";
+        publishLink.style.display = "none";
+        myOrderLink.style.display = "none";
+        riderApplyLink.style.display = "none";
+        userInfoSpan.style.display = "none";
+    }
+}
+
+async function checkRiderStatus(userId) {
+    if (!userId) return;
+    try {
+        let res = await fetch(`${baseUrl}/api/certification/list?pageNum=1&pageSize=100&_t=${Date.now()}`);
+        let json = await res.json();
+        let list = json.data?.records || [];
+        let myList = list.filter(item => item.userId == userId);
+        if (myList.length === 0) return;
+        let last = myList[0];
+        let status = Number(last.status);
+        let link = document.getElementById("riderApplyLink");
+
+        if (status === 1) {
+            link.innerText = "骑手中心";
+            link.href = "rider-center.html";
+            link.style.color = "#fff";
+            link.style.pointerEvents = "auto";
+        } else if (status === 0) {
+            link.innerText = "审核中...";
+            link.style.pointerEvents = "none";
+            link.style.color = "#ccc";
+        } else if (status === 2) {
+            link.innerText = "重新申请骑手";
+            link.style.pointerEvents = "auto";
+            link.style.color = "#fff";
+        }
+    } catch (e) {
+        console.error("检查骑手状态失败", e);
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    alert("退出成功");
+    location.href = "login.html";
+}
+
+function showMyOrder() {
+    document.getElementById("welcomeBox").style.display = "none";
+    document.getElementById("myOrderBox").style.display = "block";
+    loadMyOrders();
+}
+
+function loadMyOrders() {
+    let user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    if (!user.id) return;
+
+    fetch(baseUrl + "/api/order/list?pageNum=1&pageSize=100")
+    .then(res => res.json())
+    .then(res => {
+        let list = res.data?.records || [];
+        let myOrders = list.filter(o => o.senderId == user.id);
+        renderMyOrders(myOrders);
+    });
+}
+
+// ✅ 已删除：待确认 + 确认收货按钮，完全以后端为准！
+function renderMyOrders(list) {
+    let html = "";
+    list.forEach(o => {
+        let status = o.status || "待接单";
+        let btn = "";
+
+        // 只保留：待接单 → 可以取消
+        if (status === "待接单") {
+            btn += `<button class="btn-cancel" onclick="cancelOrder(${o.id})">取消订单</button>`;
+        }
+
+        let pick = o.pickupAddress || "-";
+        let deliver = o.deliveryAddress || "-";
+
+        html += `
+        <tr>
+            <td>${o.id}</td>
+            <td>${o.goodsName}</td>
+            <td>${o.tip}</td>
+            <td>${pick}</td>
+            <td>${deliver}</td>
+            <td>${status}</td>
+            <td>${btn}</td>
+        </tr>`;
+    });
+    document.getElementById("myOrderList").innerHTML = html;
+}
+
+function cancelOrder(id) {
+    if (!confirm("确定要取消该订单吗？")) return;
+    fetch(`${baseUrl}/api/order/${id}`, { method: "DELETE" })
+    .then(res => {
+        alert("订单已取消");
+        loadMyOrders();
+    }).catch(err => {
+        alert("取消失败");
+    });
+}
+</script>
 </body>
 </html>
