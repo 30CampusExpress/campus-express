@@ -9,6 +9,7 @@ import com.example.errand3.service.IOrderInfoService;
 import com.example.errand3.service.ICertificationService;  // 新增引入
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -60,6 +61,9 @@ public class OrderInfoController {
         }
 
         // 正常更新订单
+        if (order.getStatus() != null && order.getStatus().equals("已接单")) {
+            order.setAcceptTime(LocalDateTime.now());
+        }
         orderService.updateById(order);
         return Result.success();
     }

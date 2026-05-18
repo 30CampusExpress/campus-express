@@ -20,6 +20,8 @@ public class OrderInfo {
     private BigDecimal goodsWeight;
     private BigDecimal tip;
     private Long senderId;
+    private String pickupAddress;    // 取件地址
+    private String deliveryAddress;  // 收货地址
     private Long runnerId;
     private String status;
     private String senderContact;
