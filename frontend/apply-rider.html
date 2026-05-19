@@ -23,6 +23,13 @@
             background: #ccc !important;
             cursor: not-allowed !important;
         }
+        .tip {
+            text-align:center;
+            margin-top:15px;
+            font-size:14px;
+            color:#666;
+            display:block;
+        }
     </style>
 </head>
 <body>
@@ -45,7 +52,19 @@
         <input type="text" id="phone" placeholder="请输入手机号">
     </div>
 
+    <div class="item">
+        <label>身份证号码</label>
+        <input type="text" id="idCard" placeholder="请输入身份证号">
+    </div>
+
+    <div class="item">
+        <label>常住地址</label>
+        <input type="text" id="address" placeholder="请输入常住地址">
+    </div>
+
     <button id="submitBtn" class="btn" onclick="submitApply()" style="width:100%;height:42px;background:#409eff;color:white;border:none;border-radius:4px;font-size:16px;cursor:pointer;margin-top:10px">提交认证申请</button>
+    
+    <div id="tipText" class="tip"></div>
 </div>
 
 <script>
@@ -62,11 +81,9 @@ window.onload = function () {
     let user = JSON.parse(userStr);
     document.getElementById("realName").value = user.username;
 
-    // ============== 检查是否已经申请过 ==============
     checkUserHasApplied(user.id);
 }
 
-// ============== 禁止重复申请 ==============
 function checkUserHasApplied(userId) {
     fetch(`${baseUrl}/api/certification/list?pageNum=1&pageSize=100`)
         .then(res => res.json())
@@ -77,29 +94,30 @@ function checkUserHasApplied(userId) {
             if (myApps.length === 0) return;
 
             let last = myApps[0];
-            let status = Number(last.status);
+            let status = last.status;
             let btn = document.getElementById("submitBtn");
-            let phoneInput = document.getElementById("phone");
+            let inputs = document.querySelectorAll("#phone, #idCard, #address");
+            let tipText = document.getElementById("tipText");
 
-            // -------------------------
-            // 状态规则
-            // 1=审核中  2=已通过  3=已驳回
-            // -------------------------
-            if (status === 1) {
-                btn.innerText = "您已提交申请，等待审核中...";
-                btn.classList.add("disabled-btn");
-                btn.disabled = true;
-                phoneInput.readOnly = true;
+            // 所有状态都禁用提交按钮和输入框
+            btn.disabled = true;
+            btn.classList.add("disabled-btn");
+            inputs.forEach(inp => inp.readOnly = true);
+
+            if (status === "待审核") {
+                btn.innerText = "申请审核中";
+                tipText.innerText = "您的申请正在审核中，无法再次提交";
+                tipText.style.color = "#ff9800";
             }
-            else if (status === 2) {
-                btn.innerText = "✅ 您已成为骑手，无需重复申请";
-                btn.classList.add("disabled-btn");
-                btn.disabled = true;
-                phoneInput.readOnly = true;
+            else if (status === "通过") {
+                btn.innerText = "✅ 您已成为骑手";
+                tipText.innerText = "您已通过认证，无需重复申请";
+                tipText.style.color = "#28a745";
             }
-            else if (status === 3) {
-                btn.innerText = "❌ 申请被驳回，可重新提交";
-                btn.style.background = "#ff4444";
+            else if (status === "拒绝") {
+                btn.innerText = "❌ 申请已驳回";
+                tipText.innerText = "驳回原因：" + (last.reason || "未填写");
+                tipText.style.color = "#ff4444";
             }
         })
 }
@@ -107,9 +125,11 @@ function checkUserHasApplied(userId) {
 function submitApply() {
     let realName = document.getElementById("realName").value.trim();
     let phone = document.getElementById("phone").value.trim();
+    let idCard = document.getElementById("idCard").value.trim();
+    let address = document.getElementById("address").value.trim();
     let user = JSON.parse(localStorage.getItem("userInfo"));
 
-    if (!realName || !phone) {
+    if (!realName || !phone || !idCard || !address) {
         alert("请填写完整信息！");
         return;
     }
@@ -120,15 +140,17 @@ function submitApply() {
         body: JSON.stringify({
             userId: user.id,
             realName: realName,
-            phone: phone,
-            status: 1 // 统一用 1 表示待审核
+            contact: phone,
+            idCard: idCard,
+            address: address,
+            status: "待审核"
         })
     })
-        .then(res => res.json())
-        .then(res => {
-            alert("提交成功！等待管理员审核");
-            location.href = "index.html";
-        })
+    .then(res => res.json())
+    .then(res => {
+        alert("提交成功！等待管理员审核");
+        location.href = "index.html";
+    })
 }
 </script>
 </body>
