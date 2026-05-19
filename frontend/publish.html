@@ -178,7 +178,6 @@ document.getElementById("publishForm").addEventListener("submit", function(e){
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body:JSON.stringify({
-            // ✅ 已修复：正确字段名 pickupAddress
             pickupAddress: pickupAddress,
             deliveryAddress: deliveryAddress,
             goodsName:goodsName,
@@ -186,7 +185,7 @@ document.getElementById("publishForm").addEventListener("submit", function(e){
             goodsType:goodsType,
             tip:parseFloat(tip),
             senderId:senderId,
-            status:"待接单"
+            status:"已发布"
         })
     })
     .then(res=>res.json())
