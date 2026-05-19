@@ -121,11 +121,11 @@
     <div class="nav">
         <a href="index.html">首页</a>
         <a href="login.html" id="loginLink">登录</a>
-        <a href="publish.html" id="publishLink">发布跑腿</a>
+        <a href="publish.html" id="publishLink" style="display:none;">发布跑腿</a>
         <a href="javascript:showMyOrder()" id="myOrderLink" style="display:none;">我的订单</a>
         <a href="apply-rider.html" id="riderApplyLink" style="display:none;">骑手认证</a>
 
-        <span class="user-info" id="userInfo">
+        <span class="user-info" id="userInfo" style="display:none;">
             欢迎，<span id="uname"></span>
             <button onclick="logout()">退出</button>
         </span>
@@ -155,7 +155,7 @@
             <p>2. 自由发布订单，接单互助</p>
             <p>3. 方便全校师生，高效省时</p>
             <br>
-            <a href="login.html" class="btn">立即进入</a>
+            <a href="notice.html" class="btn">查看公告</a>
         </div>
     </div>
 
@@ -242,19 +242,19 @@ async function checkRiderStatus(userId) {
         let myList = list.filter(item => item.userId == userId);
         if (myList.length === 0) return;
         let last = myList[0];
-        let status = Number(last.status);
+        let status = last.status;
         let link = document.getElementById("riderApplyLink");
 
-        if (status === 1) {
+        if (status === "通过") {
             link.innerText = "骑手中心";
             link.href = "rider-center.html";
             link.style.color = "#fff";
             link.style.pointerEvents = "auto";
-        } else if (status === 0) {
+        } else if (status === "待审核") {
             link.innerText = "审核中...";
             link.style.pointerEvents = "none";
             link.style.color = "#ccc";
-        } else if (status === 2) {
+        } else if (status === "拒绝") {
             link.innerText = "重新申请骑手";
             link.style.pointerEvents = "auto";
             link.style.color = "#fff";
@@ -266,8 +266,7 @@ async function checkRiderStatus(userId) {
 
 function logout() {
     localStorage.clear();
-    alert("退出成功");
-    location.href = "login.html";
+    location.href = "index.html";
 }
 
 function showMyOrder() {
@@ -289,15 +288,13 @@ function loadMyOrders() {
     });
 }
 
-// ✅ 已删除：待确认 + 确认收货按钮，完全以后端为准！
 function renderMyOrders(list) {
     let html = "";
     list.forEach(o => {
         let status = o.status || "待接单";
         let btn = "";
 
-        // 只保留：待接单 → 可以取消
-        if (status === "待接单") {
+        if (status === "已发布" || status === "已接单") {
             btn += `<button class="btn-cancel" onclick="cancelOrder(${o.id})">取消订单</button>`;
         }
 
@@ -320,11 +317,21 @@ function renderMyOrders(list) {
 
 function cancelOrder(id) {
     if (!confirm("确定要取消该订单吗？")) return;
-    fetch(`${baseUrl}/api/order/${id}`, { method: "DELETE" })
+    fetch(`${baseUrl}/api/order`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, status: "已取消" })
+    })
+    .then(res => res.json())
     .then(res => {
-        alert("订单已取消");
-        loadMyOrders();
-    }).catch(err => {
+        if (res.code === 200) {
+            alert("订单已取消");
+            loadMyOrders();
+        } else {
+            alert("取消失败：" + (res.message || "未知错误"));
+        }
+    })
+    .catch(err => {
         alert("取消失败");
     });
 }
