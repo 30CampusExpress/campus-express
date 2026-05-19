@@ -2,207 +2,1027 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>校园快递跑腿系统-注册</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>管理员后台</title>
     <style>
-        /* 加载转圈动画 */
-        .loading-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid #fff;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: none;
-            margin-right: 6px;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:"微软雅黑",sans-serif;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        body{
+            background:#f5f7fa;
         }
-        /* 禁用按钮变灰 */
-        .login-btn:disabled {
-            background-color: #b3c4d8 !important;
-            cursor: not-allowed;
+
+        .admin-header{
+            background:#409eff;
+            color:white;
+            height:60px;
+            line-height:60px;
+            padding:0 20px;
+            font-size:18px;
+            font-weight:bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .user-info {
+
+        .admin-info{
+            font-size: 16px;
+            margin-right:20px;
+        }
+
+        .logout-btn{
+            background: #ff4444;
             color: white;
-            margin-left: 20px;
-            display: none;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size:14px;
         }
-        .user-info button {
-            margin-left: 8px;
-            padding: 2px 6px;
+
+        .container{
+            display:flex;
+            height:calc(100vh - 60px);
+        }
+
+        .sidebar{
+            width:220px;
+            background:#fff;
+            color:#333;
+            padding-top:0;
+            border-right:1px solid #eee;
+        }
+
+        .sidebar li{
+            list-style:none;
+            padding:15px 20px;
+            cursor:pointer;
+            font-size:16px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            transition:all 0.2s;
+        }
+
+        .sidebar li .icon{
+            margin-right:10px;
+            font-size:18px;
+            color:#409eff;
+        }
+
+        .sidebar li.active,
+        .sidebar li:hover{
+            background:#e6f2ff;
+            color:#409eff;
+        }
+
+        .submenu{
+            display:none;
+            background:#f8f9fa;
+        }
+
+        .submenu li{
+            padding-left:50px;
+            font-size:15px;
+        }
+
+        .main{
+            flex:1;
+            padding:25px;
+            overflow:auto;
+        }
+
+        .tab-content{
+            display:none;
+            background:white;
+            padding:25px;
+            border-radius:8px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .tab-content.active{
+            display:block;
+        }
+
+        .tab-content h2{
+            font-size:18px;
+            margin-bottom:15px;
+            color:#333;
+            border-left:4px solid #409eff;
+            padding-left:10px;
+        }
+
+        .search-bar {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-bar input {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 240px;
+        }
+        .btn-search {
+            padding: 6px 14px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
         }
-        /* 重复提示样式 */
-        .tip-text{
-            color:red;
+        .btn-reset {
+            padding: 6px 14px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add {
+            padding: 6px 14px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .btn-pass{
+            background:#28a745;
+            color:white;
+        }
+        .btn-reject{
+            background:#ffc107;
+            color:#333;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+            background:#fff;
+        }
+
+        th,td{
+            border:1px solid #e6e6e6;
+            padding:12px;
+            text-align:left;
+            font-size:14px;
+        }
+
+        th{
+            background:#f8f9fa;
+            font-weight:bold;
+            color:#555;
+        }
+
+        .btn{
+            padding:6px 12px;
+            border:none;
+            color:white;
+            border-radius:4px;
+            cursor:pointer;
             font-size:12px;
-            margin-top:5px;
-            display:none;
+            margin-right:5px;
+        }
+
+        .btn-edit{
+            background:#409eff;
+        }
+
+        .btn-del{
+            background:#dc3545;
+        }
+        .btn-batch-del {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .modal-content .form-item {
+            margin-bottom: 15px;
+        }
+        .modal-content .form-item label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .modal-content .form-item input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .modal-content .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .modal-content .btn-save {
+            padding: 8px 20px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .modal-content .btn-close {
+            padding: 8px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <a href="index.html">首页</a>
-        <a href="login.html" id="navLogin">登录</a>
-        <a href="register.html">注册</a>
 
-        <span id="userInfo" class="user-info">
-            欢迎，<span id="uname"></span>
-            <button onclick="logout()">退出</button>
-        </span>
+<div class="admin-header">
+    <div>校园跑腿管理系统 - 管理员后台</div>
+    <div style="display: flex; align-items: center;">
+        <span class="admin-info" id="adminUsername">管理员：加载中...</span>
+        <button class="logout-btn" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <li class="active" onclick="show('dashboard')">
+            <span><span class="icon">🏠</span>系统首页</span>
+        </li>
+
+        <li onclick="toggleSubmenu('infoMenu')">
+            <span><span class="icon">📋</span>信息管理</span>
+            <span class="arrow">▼</span>
+        </li>
+        <ul id="infoMenu" class="submenu">
+            <li onclick="show('orders')">订单信息</li>
+            <li onclick="show('notices')">公告信息</li>
+        </ul>
+
+        <li onclick="toggleSubmenu('userMenu')">
+            <span><span class="icon">👥</span>用户管理</span>
+            <span class="arrow">▼</span>
+        </li>
+        <ul id="userMenu" class="submenu">
+            <li onclick="show('users')">用户信息</li>
+            <li onclick="show('admins')">管理员信息</li>
+            <li onclick="show('certifications')">骑手认证</li>
+        </ul>
     </div>
 
-    <div class="login-card">
-        <h2>用户注册</h2>
-        
-        <form class="login-form" id="registerForm" autocomplete="off">
-            <div class="form-item">
-                <label>学号：</label>
-                <input type="text" id="studentId" placeholder="请输入学号" autocomplete="off">
-                <div class="tip-text" id="nameTip">该学号已被注册！</div>
-            </div>
-            <div class="form-item">
-                <label>姓名：</label>
-                <input type="text" id="realName" placeholder="请输入姓名" autocomplete="off">
-            </div>
-            <div class="form-item">
-                <label style="width:70px; white-space: nowrap;">手机号：</label>
-                <input type="text" id="phone" placeholder="请输入手机号" autocomplete="off">
-            </div>
-            <div class="form-item">
-                <label>密码：</label>
-                <input type="password" id="password" placeholder="请输入密码" autocomplete="new-password">
-            </div>
+    <div class="main">
+        <div id="dashboard" class="tab-content active">
+            <h2>系统首页</h2>
+            <p>欢迎登录校园跑腿管理系统</p>
+            <p style="margin-top:10px;">可管理订单、公告、用户、管理员、骑手认证等信息</p>
+        </div>
 
-            <button type="submit" class="login-btn" id="regBtn">
-                <span class="loading-spinner"></span>
-                <span class="btn-text">注册</span>
-            </button>
-        </form>
+        <div id="orders" class="tab-content">
+            <h2>订单信息</h2>
+            <div class="search-bar">
+                <input id="searchOrder" placeholder="搜索物品名称/订单号">
+                <button class="btn-search" onclick="searchOrder()">查询</button>
+                <button class="btn-reset" onclick="resetOrder()">重置</button>
+                <button class="btn-batch-del" onclick="batchDeleteOrders()">批量删除</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>序号</th>
+						<th>订单编号</th>
+                        <th>发起人</th>
+                        <th>接单人</th>
+                        <th>创建时间</th>
+                        <th>接单时间</th>
+                        <th>物品名</th>
+                        <th>小费</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="orderList"></tbody>
+            </table>
+        </div>
 
-        <p class="register-tip">已有账号？<a href="login.html">去登录</a></p>
+        <div id="notices" class="tab-content">
+            <h2>公告信息</h2>
+            <div class="search-bar">
+                <input id="searchNotice" placeholder="搜索公告标题">
+                <button class="btn-search" onclick="searchNotice()">查询</button>
+                <button class="btn-reset" onclick="resetNotice()">重置</button>
+                <button class="btn-add" onclick="addNotice()">新增公告</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>标题</th><th>内容</th><th>创建人</th><th>操作</th></tr>
+                </thead>
+                <tbody id="noticeList"></tbody>
+            </table>
+        </div>
+
+        <div id="users" class="tab-content">
+            <h2>用户信息</h2>
+            <div class="search-bar">
+                <input id="searchUser" placeholder="搜索账号/昵称/手机号">
+                <button class="btn-search" onclick="searchUser()">查询</button>
+                <button class="btn-reset" onclick="resetUser()">重置</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>账号</th>
+                        <th>昵称</th>
+                        <th>手机号</th>
+						<th>性别</th>
+						<th>注册时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="userList"></tbody>
+            </table>
+        </div>
+
+        <div id="admins" class="tab-content">
+            <h2>管理员信息</h2>
+            <div class="search-bar">
+                <input id="searchAdmin" placeholder="搜索管理员账号/昵称/手机号">
+                <button class="btn-search" onclick="searchAdmin()">查询</button>
+                <button class="btn-reset" onclick="resetAdmin()">重置</button>
+                <button class="btn-add" onclick="addAdmin()">新增管理员</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>账号</th>
+                        <th>昵称</th>
+                        <th>手机号</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="adminList"></tbody>
+            </table>
+        </div>
+
+        <div id="certifications" class="tab-content">
+            <h2>骑手认证申请</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户ID</th>
+                        <th>姓名</th>
+                        <th>手机号</th>
+                        <th>身份证号</th>
+                        <th>地址</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="certList"></tbody>
+            </table>
+        </div>
+
     </div>
+</div>
 
-    <div class="footer">© 2026 校园快递跑腿管理系统</div>
+<!-- 编辑弹窗 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3 id="editTitle">编辑</h3>
+        <div id="editBody"></div>
+        <div class="btn-group">
+            <button class="btn-close" onclick="closeEditModal()">取消</button>
+            <button class="btn-save" id="saveEditBtn">保存</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    const baseUrl = "http://172.25.168.86:9090";
-    const regBtn = document.getElementById("regBtn");
-    const spinner = document.querySelector(".loading-spinner");
-    const btnText = document.querySelector(".btn-text");
+const baseUrl = "http://172.25.168.86:9090";
+let allUsers = [], allAdmins = [], allOrders = [], allNotices = [], allCerts = [];
+let currentEditType = "", currentEditId = null;
 
-    // 失去焦点校验学号是否已注册
-    document.getElementById("studentId").addEventListener("blur", function(){
-        let username = this.value.trim();
-        if(!username) return;
-        
-        fetch(baseUrl + "/api/user/check?username=" + username)
-        .then(res=>res.json())
-        .then(res=>{
-            if(res.data === true){
-                document.getElementById("nameTip").style.display = "block";
-            }else{
-                document.getElementById("nameTip").style.display = "none";
-            }
-        })
-    });
-
-    document.getElementById("registerForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        let studentId = document.getElementById("studentId").value.trim();
-        let realName = document.getElementById("realName").value.trim();
-        let phone = document.getElementById("phone").value.trim();
-        let password = document.getElementById("password").value.trim();
-
-        // 先判断学号重复
-        if(document.getElementById("nameTip").style.display === "block"){
-            alert("注册失败：当前学号已经存在，请勿重复注册");
-            return;
-        }
-        // 非空校验
-        if (!studentId) {
-            alert("注册失败：请填写学号");
-            return;
-        }
-        if (!realName) {
-            alert("注册失败：请填写真实姓名");
-            return;
-        }
-        if (!phone) {
-            alert("注册失败：请填写手机号码");
-            return;
-        }
-        if (!password) {
-            alert("注册失败：请设置登录密码");
-            return;
-        }
-        if(password.length < 6){
-            alert("注册失败：密码长度不能少于6位");
-            return;
-        }
-
-        regBtn.disabled = true;
-        spinner.style.display = "inline-block";
-        btnText.innerText = "注册中...";
-
-        fetch(baseUrl + "/api/user/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                username: studentId,
-                nickname: realName,
-                phone: phone,
-                password: password
-            })
-        })
-        .then(res => res.json())
-        .then(res => {
-            if (res.code === 200) {
-                alert("注册成功！请前往登录页面登录账号");
-                location.href = "login.html";
-            } else {
-                // 后端返回自定义失败原因优先展示
-                let errMsg = res.msg || res.message || "未知原因导致注册失败，请稍后重试";
-                alert("注册失败：" + errMsg);
-            }
-        })
-        .catch(() => {
-            alert("注册失败：无法连接后端服务器，请检查网络或服务是否启动");
-        })
-        .finally(() => {
-            regBtn.disabled = false;
-            spinner.style.display = "none";
-            btnText.innerText = "注册";
-        });
-    });
-
-    window.onload = function () {
-        let navLogin = document.getElementById("navLogin");
-        let userInfo = document.getElementById("userInfo");
-        let uname = document.getElementById("uname");
-
-        let isLogin = localStorage.getItem("isLogin");
-        let username = localStorage.getItem("username");
-
-        if (isLogin == "true") {
-            navLogin.style.display = "none";
-            userInfo.style.display = "inline-block";
-            uname.innerText = username;
-        } else {
-            navLogin.style.display = "inline-block";
-            userInfo.style.display = "none";
-        }
+window.onload = async function(){
+    let adminStr = localStorage.getItem("adminInfo");
+    if(!adminStr){
+        alert("请先登录管理员");
+        location.href="login.html";
+        return;
     }
 
-    function logout() {
+    let admin = JSON.parse(adminStr);
+    document.getElementById("adminUsername").innerText = "管理员：" + admin.username;
+
+    await loadUsers();
+    await loadAllAdmins();
+    loadOrders();
+    loadNotices();
+    loadCertifications();
+
+    document.getElementById("selectAll").addEventListener("change", function(){
+        const checkboxes = document.querySelectorAll("#orderList .order-checkbox");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    document.getElementById("editModal").addEventListener("click", function(e) {
+        if (e.target === this) closeEditModal();
+    });
+}
+
+// ========== 弹窗相关 ==========
+function closeEditModal() {
+    document.getElementById("editModal").style.display = "none";
+    currentEditType = "";
+    currentEditId = null;
+}
+
+function openEditModal(title, bodyHtml, saveCallback) {
+    document.getElementById("editTitle").innerText = title;
+    document.getElementById("editBody").innerHTML = bodyHtml;
+    document.getElementById("editModal").style.display = "flex";
+    document.getElementById("saveEditBtn").onclick = saveCallback;
+}
+
+// ========== 新增管理员 ==========
+function addAdmin() {
+    let bodyHtml = `
+        <div class="form-item"><label>账号</label><input type="text" id="addAdminUsername" placeholder="请输入账号"></div>
+        <div class="form-item"><label>昵称</label><input type="text" id="addAdminNickname" placeholder="请输入昵称"></div>
+        <div class="form-item"><label>手机号</label><input type="text" id="addAdminPhone" placeholder="请输入手机号"></div>
+        <div class="form-item"><label>密码</label><input type="password" id="addAdminPassword" placeholder="请输入密码"></div>
+    `;
+    openEditModal("新增管理员", bodyHtml, saveAddAdmin);
+}
+
+function saveAddAdmin() {
+    let username = document.getElementById("addAdminUsername").value.trim();
+    let nickname = document.getElementById("addAdminNickname").value.trim();
+    let phone = document.getElementById("addAdminPhone").value.trim();
+    let password = document.getElementById("addAdminPassword").value.trim();
+
+    if (!username || !nickname || !phone || !password) { alert("所有字段不能为空"); return; }
+
+    fetch(baseUrl + "/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, nickname, phone, password, role: "ADMIN" })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("新增成功！"); closeEditModal(); loadAllAdmins(); }
+        else { alert("新增失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 新增公告 ==========
+function addNotice() {
+    let bodyHtml = `
+        <div class="form-item"><label>标题</label><input type="text" id="addNoticeTitle" placeholder="请输入公告标题"></div>
+        <div class="form-item"><label>内容</label><input type="text" id="addNoticeContent" placeholder="请输入公告内容"></div>
+    `;
+    openEditModal("新增公告", bodyHtml, saveAddNotice);
+}
+
+function saveAddNotice() {
+    let title = document.getElementById("addNoticeTitle").value.trim();
+    let content = document.getElementById("addNoticeContent").value.trim();
+
+    if (!title || !content) { alert("标题和内容不能为空"); return; }
+
+    fetch(baseUrl + "/api/notice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content, creator: "管理员" })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("新增成功！"); closeEditModal(); loadNotices(); }
+        else { alert("新增失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 编辑用户 ==========
+function editUser(id) {
+    let user = allUsers.find(u => u.id === id);
+    if (!user) { alert("用户不存在"); return; }
+    currentEditType = "user";
+    currentEditId = id;
+
+    let bodyHtml = `
+        <div class="form-item"><label>账号</label><input type="text" id="editUsername" value="${user.username || ''}" readonly></div>
+        <div class="form-item"><label>昵称</label><input type="text" id="editNickname" value="${user.nickname || ''}"></div>
+        <div class="form-item"><label>手机号</label><input type="text" id="editPhone" value="${user.phone || ''}"></div>
+    `;
+    openEditModal("编辑用户", bodyHtml, saveUserEdit);
+}
+
+function saveUserEdit() {
+    let nickname = document.getElementById("editNickname").value.trim();
+    let phone = document.getElementById("editPhone").value.trim();
+    if (!nickname || !phone) { alert("昵称和手机号不能为空"); return; }
+
+    fetch(baseUrl + "/api/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentEditId, nickname, phone })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("修改成功！"); closeEditModal(); loadUsers(); }
+        else { alert("修改失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 编辑订单 ==========
+function editOrder(id) {
+    let order = allOrders.find(o => o.id === id);
+    if (!order) { alert("订单不存在"); return; }
+    currentEditType = "order";
+    currentEditId = id;
+
+    let bodyHtml = `
+        <div class="form-item"><label>物品名称</label><input type="text" id="editGoodsName" value="${order.goodsName || ''}"></div>
+        <div class="form-item"><label>小费</label><input type="text" id="editTip" value="${order.tip || ''}"></div>
+        <div class="form-item"><label>状态</label><input type="text" id="editStatus" value="${order.status || ''}" placeholder="已发布/已接单/进行中/已完成/已取消"></div>
+    `;
+    openEditModal("编辑订单", bodyHtml, saveOrderEdit);
+}
+
+function saveOrderEdit() {
+    let goodsName = document.getElementById("editGoodsName").value.trim();
+    let tip = document.getElementById("editTip").value.trim();
+    let status = document.getElementById("editStatus").value.trim();
+    if (!goodsName || !tip || !status) { alert("物品名称、小费和状态不能为空"); return; }
+
+    fetch(baseUrl + "/api/order", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentEditId, goodsName, tip: parseFloat(tip), status })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("修改成功！"); closeEditModal(); loadOrders(); }
+        else { alert("修改失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 编辑公告 ==========
+function editNotice(id) {
+    let notice = allNotices.find(n => n.id === id);
+    if (!notice) { alert("公告不存在"); return; }
+    currentEditType = "notice";
+    currentEditId = id;
+
+    let bodyHtml = `
+        <div class="form-item"><label>标题</label><input type="text" id="editTitleInput" value="${notice.title || ''}"></div>
+        <div class="form-item"><label>内容</label><input type="text" id="editContent" value="${notice.content || ''}"></div>
+    `;
+    openEditModal("编辑公告", bodyHtml, saveNoticeEdit);
+}
+
+function saveNoticeEdit() {
+    let title = document.getElementById("editTitleInput").value.trim();
+    let content = document.getElementById("editContent").value.trim();
+    if (!title || !content) { alert("标题和内容不能为空"); return; }
+
+    fetch(baseUrl + "/api/notice", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentEditId, title, content })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("修改成功！"); closeEditModal(); loadNotices(); }
+        else { alert("修改失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 编辑管理员（显示账号、昵称、手机号、角色）==========
+function editAdmin(id) {
+    let admin = allAdmins.find(a => a.id === id);
+    if (!admin) { alert("管理员不存在"); return; }
+    currentEditType = "admin";
+    currentEditId = id;
+
+    let bodyHtml = `
+        <div class="form-item"><label>账号</label><input type="text" id="editAdminUsername" value="${admin.username || ''}"></div>
+        <div class="form-item"><label>昵称</label><input type="text" id="editAdminNickname" value="${admin.nickname || ''}"></div>
+        <div class="form-item"><label>手机号</label><input type="text" id="editAdminPhone" value="${admin.phone || ''}"></div>
+        <div class="form-item"><label>角色</label><input type="text" value="${admin.role || 'ADMIN'}" readonly></div>
+    `;
+    openEditModal("编辑管理员", bodyHtml, saveAdminEdit);
+}
+
+function saveAdminEdit() {
+    let username = document.getElementById("editAdminUsername").value.trim();
+    let nickname = document.getElementById("editAdminNickname").value.trim();
+    let phone = document.getElementById("editAdminPhone").value.trim();
+    if (!username || !nickname || !phone) { alert("账号、昵称和手机号不能为空"); return; }
+
+    fetch(baseUrl + "/api/admin", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentEditId, username, nickname, phone })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.code === 200) { alert("修改成功！"); closeEditModal(); loadAllAdmins(); }
+        else { alert("修改失败：" + (res.message || "未知错误")); }
+    })
+    .catch(err => { alert("请求失败：" + err); });
+}
+
+// ========== 其他原有函数 ==========
+function getAllAccountList(){
+    let userList = allUsers.map(u => ({id: u.id, username: u.username}));
+    let adminList = allAdmins.map(a => ({id: a.id, username: a.username}));
+    return [...userList, ...adminList];
+}
+
+function logout(){
+    if(confirm("确定要退出登录吗？")){
         localStorage.clear();
-        alert("退出成功");
+        alert("退出成功！");
         location.href = "login.html";
     }
+}
+
+function show(id){
+    document.querySelectorAll(".tab-content").forEach(e=>e.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".sidebar li").forEach(e=>e.classList.remove("active"));
+    event.target.closest("li").classList.add("active");
+}
+
+function toggleSubmenu(id){
+    let submenu = document.getElementById(id);
+    submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+}
+
+function loadUsers(){
+    return new Promise(resolve => {
+        fetch(baseUrl + "/api/user/list?pageNum=1&pageSize=100")
+        .then(res=>res.json())
+        .then(res=>{
+            allUsers = res.data?.records || [];
+            renderUsers(allUsers);
+            resolve();
+        });
+    });
+}
+
+function renderUsers(list) {
+    let html = "";
+    list.forEach(u=>{
+        let genderText = u.gender === 1 ? '男' : u.gender === 2 ? '女' : '未知';
+        let createTime = (u.createTime || "无").replace("T", " ");
+        html+=`<tr>
+            <td>${u.username}</td>
+            <td>${u.nickname || ''}</td>
+            <td>${u.phone || ''}</td>
+            <td>${genderText}</td>
+            <td>${createTime}</td>
+            <td>
+                <button class="btn btn-edit" onclick="editUser(${u.id})">编辑</button>
+                <button class="btn btn-del" onclick="delUser(${u.id})">删除</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById("userList").innerHTML = html;
+}
+
+function searchUser() {
+    let kw = document.getElementById("searchUser").value.trim().toLowerCase();
+    let filter = allUsers.filter(u => 
+        (u.username || "").toLowerCase().includes(kw) ||
+        (u.nickname || "").toLowerCase().includes(kw) ||
+        (u.phone || "").includes(kw)
+    );
+    renderUsers(filter);
+}
+
+function resetUser() {
+    document.getElementById("searchUser").value = "";
+    renderUsers(allUsers);
+}
+
+function delUser(id){
+    if(!confirm("确定删除该用户？")) return;
+    fetch(baseUrl + `/api/user/${id}`, { method: "DELETE" })
+    .then(res=>res.json())
+    .then(res=>{
+        alert("删除成功");
+        loadUsers();
+        loadOrders();
+    });
+}
+
+function loadAllAdmins(){
+    return new Promise(resolve => {
+        fetch(baseUrl + "/api/admin/list?pageNum=1&pageSize=100")
+        .then(res=>res.json())
+        .then(res=>{
+            allAdmins = res.data?.records || [];
+            renderAdmins(allAdmins);
+            resolve();
+        });
+    });
+}
+
+function loadOrders(){
+    fetch(baseUrl + "/api/order/list?pageNum=1&pageSize=100")
+    .then(res=>res.json())
+    .then(res=>{
+        allOrders = res.data?.records || [];
+        renderOrders(allOrders);
+    });
+}
+
+function renderOrders(list) {
+    let html = "";
+    let accounts = getAllAccountList();
+    list.forEach((o, index)=>{
+        let seq = index + 1;
+        let senderName = "-";
+        let riderName = "-";
+        let sender = accounts.find(a => a.id == o.senderId);
+        if(sender) senderName = sender.username;
+        if(o.runnerId){
+            let rider = accounts.find(a => a.id == o.runnerId);
+            if(rider) riderName = rider.username;
+        }
+        let createTime = (o.createTime || "无").replace("T", " ");
+        let takeTime = "未接单";
+        if (o.acceptTime) {
+            takeTime = o.acceptTime.replace("T", " ");
+        }
+
+        let status = o.status;
+
+        html+=`<tr>
+            <td><input type="checkbox" class="order-checkbox" value="${o.id}"></td>
+            <td>${seq}</td>
+            <td>${o.orderNo || o.id}</td>
+            <td>${senderName}</td>
+            <td>${riderName}</td>
+            <td>${createTime}</td>
+            <td>${takeTime}</td>
+            <td>${o.goodsName}</td>
+            <td>${o.tip}</td>
+            <td>${status}</td>
+            <td>
+                <button class="btn btn-edit" onclick="editOrder(${o.id})">编辑</button>
+                <button class="btn btn-del" onclick="delOrder(${o.id})">删除</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById("orderList").innerHTML = html;
+}
+
+function searchOrder() {
+    let kw = document.getElementById("searchOrder").value.trim().toLowerCase();
+    let filter = allOrders.filter(o =>
+        (o.goodsName || "").toLowerCase().includes(kw) ||
+        (o.id + "").includes(kw)
+    );
+    renderOrders(filter);
+}
+
+function resetOrder() {
+    document.getElementById("searchOrder").value = "";
+    renderOrders(allOrders);
+}
+
+function delOrder(id){
+    if(!confirm("确定删除该订单？")) return;
+    fetch(baseUrl + `/api/order/${id}`, { method: "DELETE" })
+    .then(res=>res.json())
+    .then(res=>{
+        alert("删除成功");
+        loadOrders();
+    });
+}
+
+function batchDeleteOrders() {
+    const checkboxes = document.querySelectorAll("#orderList .order-checkbox");
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    if(ids.length === 0){
+        alert("请选择要删除的订单");
+        return;
+    }
+    if(!confirm("确定批量删除选中的订单？")) return;
+    Promise.all(ids.map(id => fetch(`${baseUrl}/api/order/${id}`, { method:"DELETE" })))
+    .then(()=>{
+        alert("批量删除成功");
+        loadOrders();
+    })
+}
+
+function loadNotices(){
+    fetch(baseUrl + "/api/notice/list?pageNum=1&pageSize=100")
+    .then(res=>res.json())
+    .then(res=>{
+        allNotices = res.data?.records || [];
+        renderNotices(allNotices);
+    });
+}
+
+function renderNotices(list) {
+    let html = "";
+    list.forEach(n=>{
+        html+=`<tr>
+            <td>${n.id}</td>
+            <td>${n.title}</td>
+            <td>${n.content}</td>
+            <td>${n.creator || '管理员'}</td>
+            <td>
+                <button class="btn btn-edit" onclick="editNotice(${n.id})">编辑</button>
+                <button class="btn btn-del" onclick="delNotice(${n.id})">删除</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById("noticeList").innerHTML = html;
+}
+
+function searchNotice() {
+    let kw = document.getElementById("searchNotice").value.trim().toLowerCase();
+    let filter = allNotices.filter(n =>
+        (n.title || "").toLowerCase().includes(kw)
+    );
+    renderNotices(filter);
+}
+
+function resetNotice() {
+    document.getElementById("searchNotice").value = "";
+    renderNotices(allNotices);
+}
+
+function delNotice(id){
+    if(!confirm("确定删除该公告？")) return;
+    fetch(baseUrl + `/api/notice/${id}`, { method: "DELETE" })
+    .then(res=>res.json())
+    .then(res=>{
+        alert("删除成功");
+        loadNotices();
+    });
+}
+
+function renderAdmins(list) {
+    let html = "";
+    list.forEach(a=>{
+        let createTime = (a.createTime || "无").replace("T", " ");
+        html+=`<tr>
+            <td>${a.username}</td>
+            <td>${a.nickname || ''}</td>
+            <td>${a.phone || ''}</td>
+            <td>${a.email || ''}</td>
+            <td>${a.role || 'ADMIN'}</td>
+            <td>${createTime}</td>
+            <td>
+                <button class="btn btn-edit" onclick="editAdmin(${a.id})">编辑</button>
+                <button class="btn btn-del" onclick="delAdmin(${a.id})">删除</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById("adminList").innerHTML = html;
+}
+
+function searchAdmin() {
+    let kw = document.getElementById("searchAdmin").value.trim().toLowerCase();
+    let filter = allAdmins.filter(a =>
+        (a.username || "").toLowerCase().includes(kw) ||
+        (a.nickname || "").toLowerCase().includes(kw) ||
+        (a.phone || "").includes(kw)
+    );
+    renderAdmins(filter);
+}
+
+function resetAdmin() {
+    document.getElementById("searchAdmin").value = "";
+    renderAdmins(allAdmins);
+}
+
+function delAdmin(id){
+    if(!confirm("确定删除该管理员？")) return;
+    fetch(baseUrl + `/api/admin/${id}`, { method: "DELETE" })
+    .then(res=>res.json())
+    .then(res=>{
+        alert("删除成功");
+        loadAllAdmins();
+    });
+}
+
+function loadCertifications(){
+    fetch(baseUrl + "/api/certification/list?pageNum=1&pageSize=100")
+    .then(res=>res.json())
+    .then(res=>{
+        allCerts = res.data?.records || [];
+        renderCertifications(allCerts);
+    });
+}
+
+function renderCertifications(list){
+    let html = "";
+    list.forEach(c=>{
+        let statusText = "";
+        if (c.status === "通过") {
+            statusText = "已通过";
+        } else if (c.status === "拒绝") {
+            statusText = "已驳回";
+        } else {
+            statusText = "待审核";
+        }
+
+        html+=`<tr>
+            <td>${c.id}</td>
+            <td>${c.userId}</td>
+            <td>${c.realName}</td>
+            <td>${c.contact}</td>
+            <td>${c.idCard || ''}</td>
+            <td>${c.address || ''}</td>
+            <td>${statusText}</td>
+            <td>
+                <button class="btn btn-pass" onclick="auditCert(${c.id}, 1)">通过</button>
+                <button class="btn btn-reject" onclick="auditCert(${c.id}, 2)">驳回</button>
+                <button class="btn btn-del" onclick="delCert(${c.id})">删除</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById("certList").innerHTML = html;
+}
+
+function auditCert(id, status) {
+    let statusText = status === 1 ? "通过" : "拒绝";
+    let msg = status === 1 ? "确定通过" : "确定驳回";
+    if (!confirm(msg)) return;
+    fetch(baseUrl + "/api/certification", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, status: statusText })
+    })
+    .then(res => res.json())
+    .then(res => {
+        alert("操作成功");
+        loadCertifications();
+    });
+}
+
+function delCert(id){
+    if(!confirm("确定删除？"))return;
+    fetch(`${baseUrl}/api/certification/${id}`,{method:"DELETE"})
+    .then(res=>res.json())
+    .then(()=>{
+        alert("删除成功");
+        loadCertifications();
+    })
+}
 </script>
 </body>
 </html>
