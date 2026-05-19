@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>校园跑腿 - 公告列表</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"微软雅黑";background:#f5f7fa}
+        .nav{background:#409eff;padding:15px 30px;color:white}
+        .nav a{color:white;text-decoration:none;margin-right:20px}
+        .box{max-width:800px;margin:30px auto;background:white;padding:30px;border-radius:8px;box-shadow:0 0 10px #eee}
+        .box h2{text-align:center;margin-bottom:20px;color:#333}
+        .notice-card{
+            background:#f8f9fa;
+            border-left:4px solid #409eff;
+            padding:15px;
+            margin-bottom:12px;
+            border-radius:4px;
+        }
+        .notice-card h4{color:#333;margin-bottom:8px;font-size:16px}
+        .notice-card p{color:#666;font-size:14px;line-height:1.6}
+        .notice-card .time{color:#999;font-size:12px;margin-top:8px}
+        .empty{padding:30px;text-align:center;color:#999;font-size:16px}
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <a href="index.html">首页</a>
+    <span style="color:white">系统公告</span>
+</div>
+
+<div class="box">
+    <h2>📋 系统公告</h2>
+    <div id="noticeList"></div>
+</div>
+
+<script>
+const baseUrl = "http://172.25.168.86:9090";
+
+function loadNotices() {
+    fetch(baseUrl + "/api/notice/list?pageNum=1&pageSize=50")
+    .then(res => res.json())
+    .then(res => {
+        let list = res.data?.records || [];
+        renderNotices(list);
+    })
+    .catch(err => {
+        document.getElementById("noticeList").innerHTML = '<div class="empty">加载失败，请检查后端是否启动</div>';
+    });
+}
+
+function renderNotices(list) {
+    if (list.length === 0) {
+        document.getElementById("noticeList").innerHTML = '<div class="empty">暂无公告</div>';
+        return;
+    }
+
+    let html = "";
+    list.forEach(n => {
+        let time = (n.createTime || "").replace("T", " ");
+        html += `
+        <div class="notice-card">
+            <h4>${n.title}</h4>
+            <p>${n.content}</p>
+            <div class="time">${time} · 发布人：${n.creator || '管理员'}</div>
+        </div>`;
+    });
+    document.getElementById("noticeList").innerHTML = html;
+}
+
+window.onload = loadNotices;
+</script>
+</body>
+</html>
