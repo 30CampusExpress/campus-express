@@ -201,7 +201,6 @@
 <script>
 const baseUrl = "http://172.25.168.86:9090";
 let user = JSON.parse(localStorage.getItem("userInfo"));
-let takenOrderIds = new Set();
 
 window.onload = function () {
     if (!user) {
@@ -227,7 +226,8 @@ function loadAllOrders() {
         .then(res => res.json())
         .then(res => {
             let list = res.data?.records || [];
-            let waitList = list.filter(o => !takenOrderIds.has(o.id));
+            // 只显示"已发布"且还没有接单人的订单
+            let waitList = list.filter(o => o.status === "已发布" && !o.runnerId);
             renderWaitOrders(waitList);
         });
 }
@@ -236,7 +236,7 @@ function loadAllOrders() {
 function renderWaitOrders(list) {
     let html = "";
     list.forEach(o => {
-        let status = o.state || o.status || "未知状态";
+        let status = o.status || "未知状态";
         html += `
         <div class="order-card">
             <div class="info-left">
@@ -247,7 +247,7 @@ function renderWaitOrders(list) {
             </div>
             <div class="btn-group">
                 <button class="btn-detail" onclick="showOrderDetail(${o.id})">查看详情</button>
-                <button class="btn-take" id="takeBtn-${o.id}" onclick="takeOrder(${o.id})">立即接单</button>
+                <button class="btn-take" onclick="takeOrder(${o.id})">立即接单</button>
             </div>
         </div>`;
     });
@@ -259,21 +259,13 @@ function renderWaitOrders(list) {
 function takeOrder(orderId) {
     if (!confirm("确定要接此订单吗？")) return;
 
-    const btn = document.getElementById(`takeBtn-${orderId}`);
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "接单中...";
-    }
-
-    takenOrderIds.add(orderId);
-
     fetch(baseUrl + "/api/order", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             id: orderId,
-            runner_id: user.id,
-            state: "已接单"
+            runnerId: user.id,
+            status: "已接单"
         })
     })
     .then(res => {
@@ -281,50 +273,47 @@ function takeOrder(orderId) {
         return res.json();
     })
     .then(res => {
-        alert("接单成功！");
-        loadAllOrders();
-        loadMyTakeOrders();
+        if (res.code === 200) {
+            alert("接单成功！");
+            loadAllOrders();
+            loadMyTakeOrders();
+        } else {
+            alert("接单失败：" + (res.message || "未知错误"));
+        }
     })
     .catch(err => {
         alert("接单失败，请重试");
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "立即接单";
-        }
-        takenOrderIds.delete(orderId);
         console.error(err);
     });
 }
 
-// 加载我的接单记录
+// 加载我的接单记录（完全依赖后端返回的 runnerId）
 function loadMyTakeOrders() {
     fetch(baseUrl + "/api/order/list?pageNum=1&pageSize=100")
         .then(res => res.json())
         .then(res => {
             let list = res.data?.records || [];
-            let myList = list.filter(o => 
-                o.runner_id == user.id || takenOrderIds.has(o.id)
-            );
+            // 只显示接单人是我自己的订单
+            let myList = list.filter(o => o.runnerId == user.id);
             renderMyOrders(myList);
         });
 }
 
-// ✅ 关键修改：直接读取后端订单状态来控制按钮
+// 渲染我的接单记录（根据后端真实状态显示按钮）
 function renderMyOrders(list) {
     let html = "";
     list.forEach(o => {
-        // 直接用后端的真实状态
-        let orderStatus = o.state || o.status || "未知状态";
+        let orderStatus = o.status || "未知状态";
         let tipColor = orderStatus === "已完成" ? "#28a745" : "#409eff";
         
         // 根据后端状态决定按钮
         let finishBtn = "";
         if (orderStatus === "已接单") {
-            finishBtn = `<button class="btn-finish" id="finishBtn-${o.id}" onclick="finishOrder(${o.id})">确认完成</button>`;
+            finishBtn = `<button class="btn-finish" onclick="finishOrder(${o.id})">确认完成</button>`;
         } else if (orderStatus === "已完成") {
             finishBtn = `<button class="btn-finish" disabled>已完成</button>`;
         } else {
-            finishBtn = `<button class="btn-finish" disabled style="background:#ccc;">已完成</button>`;
+            finishBtn = `<button class="btn-finish" disabled>已完成</button>`;
         }
         
         html += `
@@ -345,22 +334,16 @@ function renderMyOrders(list) {
     document.getElementById("myOrderList").innerHTML = html;
 }
 
-// 完成订单（请求后强制刷新列表）
+// 完成订单
 function finishOrder(orderId) {
     if (!confirm("确认订单已完成？")) return;
-
-    const btn = document.getElementById(`finishBtn-${orderId}`);
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "完成中...";
-    }
 
     fetch(baseUrl + "/api/order", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             id: orderId,
-            state: "已完成"
+            status: "已完成"
         })
     })
     .then(res => {
@@ -368,16 +351,15 @@ function finishOrder(orderId) {
         return res.json();
     })
     .then(res => {
-        alert("订单已完成！");
-        // 强制刷新列表，后端状态会更新，按钮自动变灰
-        loadMyTakeOrders();
+        if (res.code === 200) {
+            alert("订单已完成！");
+            loadMyTakeOrders();
+        } else {
+            alert("完成失败：" + (res.message || "未知错误"));
+        }
     })
     .catch(err => {
         alert("完成失败，请重试");
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "确认完成";
-        }
         console.error(err);
     });
 }
@@ -399,7 +381,7 @@ function showOrderDetail(orderId) {
                 <p><strong>取货地址：</strong>${order.pickupAddress || "无"}</p>
                 <p><strong>送货地址：</strong>${order.deliveryAddress || "无"}</p>
                 <p><strong>小费：</strong>${order.tip} 元</p>
-                <p><strong>状态：</strong>${order.state || order.status || "未知状态"}</p>
+                <p><strong>状态：</strong>${order.status || "未知状态"}</p>
             `;
             document.getElementById("modalBody").innerHTML = modalHtml;
             document.getElementById("orderModal").style.display = "flex";
